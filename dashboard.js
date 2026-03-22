@@ -1,4 +1,3 @@
-
 const MONTHS = ["Apr'26","May'26","Jun'26","Jul'26","Aug'26","Sep'26","Oct'26","Nov'26","Dec'26","Jan'27","Feb'27","Mar'27"];
 let cashChart, netChart, inoutChart, costPieChart;
 
@@ -95,17 +94,18 @@ function calculate(inp) {
     rows.push({ month: MONTHS[i], devs, inflow, outflow, net, cash });
   }
 
-  return {
-    rows,
-    endCash: cash,
-    minCash,
-    breakevenIdx,
-    totPayroll,
-    totFounder,
-    totOffice,
-    totSoftware,
-    totProto
-  };
+  return { rows, endCash: cash, minCash, breakevenIdx, totPayroll, totFounder, totOffice, totSoftware, totProto };
+}
+
+function updateOutcome(d) {
+  const el = document.getElementById("outcome_text");
+  if (d.minCash < 0) {
+    el.textContent = "With the current settings the studio will run out of cash before the 12th month, so either hiring or founder draw needs to slow down or revenue must grow faster.";
+  } else if (d.minCash < 200000) {
+    el.textContent = "Cash stays positive but very tight, meaning any delay in Fiverr or direct-client payments could force you to delay salaries or cut prototype spending.";
+  } else {
+    el.textContent = "The studio remains comfortably cash-positive for the full year, giving you room to keep investing in prototypes and marketing while scaling the team gradually.";
+  }
 }
 
 function updateKPIs(d) {
@@ -116,10 +116,9 @@ function updateKPIs(d) {
 
   const badge = document.getElementById("status_badge");
   const text = document.getElementById("status_text");
-
-  badge.classList.remove("status-safe","status-warn","status-danger");
   const dot = badge.querySelector(".status-dot");
 
+  badge.classList.remove("status-safe","status-warn","status-danger");
   if (d.minCash < 0) {
     badge.classList.add("status-danger");
     text.textContent = "Critical";
@@ -133,28 +132,30 @@ function updateKPIs(d) {
     text.textContent = "Stable";
     dot.style.background = "var(--safe)";
   }
+
+  updateOutcome(d);
 }
 
-function baseChartOptions() {
+function baseOptions() {
   return {
     responsive: true,
     maintainAspectRatio: true,
     plugins: {
-      legend: { labels: { color: "#8b98b3", font: { size: 10 } } },
+      legend: { labels: { color: "#6b6f7a", font: { size: 10 } } },
       tooltip: { mode: "index", intersect: false }
     },
     scales: {
       x: {
-        ticks: { color: "#8b98b3", font: { size: 10 } },
-        grid: { color: "rgba(255,255,255,0.04)" }
+        ticks: { color: "#6b6f7a", font: { size: 10 } },
+        grid: { color: "rgba(0,0,0,0.04)" }
       },
       y: {
         ticks: {
-          color: "#8b98b3",
+          color: "#6b6f7a",
           font: { size: 10 },
           callback: (v) => v + "L"
         },
-        grid: { color: "rgba(255,255,255,0.04)" }
+        grid: { color: "rgba(0,0,0,0.04)" }
       }
     }
   };
@@ -174,14 +175,14 @@ function updateCharts(d) {
       datasets: [{
         label: "Cash (Lakh BDT)",
         data: cashL,
-        borderColor: "#ff4b4b",
-        backgroundColor: "rgba(255,75,75,0.12)",
+        borderColor: "#e53935",
+        backgroundColor: "rgba(229,57,53,0.12)",
         fill: true,
         tension: 0.3,
         pointRadius: 3
       }]
     },
-    options: Object.assign({}, baseChartOptions(), { plugins: { legend: { display: false } } })
+    options: Object.assign({}, baseOptions(), { plugins: { legend: { display: false } } })
   });
 
   if (netChart) netChart.destroy();
@@ -192,10 +193,10 @@ function updateCharts(d) {
       datasets: [{
         label: "Net (Lakh)",
         data: netL,
-        backgroundColor: netL.map(v => v >= 0 ? "rgba(61,214,140,0.8)" : "rgba(255,75,75,0.8)")
+        backgroundColor: netL.map(v => v >= 0 ? "rgba(46,125,50,0.85)" : "rgba(229,57,53,0.85)")
       }]
     },
-    options: Object.assign({}, baseChartOptions(), { plugins: { legend: { display: false } } })
+    options: Object.assign({}, baseOptions(), { plugins: { legend: { display: false } } })
   });
 
   if (inoutChart) inoutChart.destroy();
@@ -204,11 +205,11 @@ function updateCharts(d) {
     data: {
       labels: MONTHS,
       datasets: [
-        { label: "Inflow",  data: inflL, backgroundColor: "rgba(229,236,244,0.7)" },
-        { label: "Outflow", data: outL, backgroundColor: "rgba(255,75,75,0.7)" }
+        { label: "Inflow",  data: inflL, backgroundColor: "rgba(17,17,17,0.3)" },
+        { label: "Outflow", data: outL,  backgroundColor: "rgba(229,57,53,0.8)" }
       ]
     },
-    options: baseChartOptions()
+    options: baseOptions()
   });
 
   const costData = [d.totPayroll, d.totFounder, d.totOffice, d.totSoftware, d.totProto].map(v => v/1e5);
@@ -220,11 +221,11 @@ function updateCharts(d) {
       datasets: [{
         data: costData,
         backgroundColor: [
-          "rgba(255,75,75,0.85)",
-          "rgba(255,176,32,0.9)",
-          "rgba(149,160,183,0.7)",
-          "rgba(118,130,155,0.8)",
-          "rgba(72,86,115,0.9)"
+          "rgba(229,57,53,0.9)",
+          "rgba(249,168,37,0.9)",
+          "rgba(158,158,158,0.9)",
+          "rgba(189,189,189,0.9)",
+          "rgba(224,224,224,0.9)"
         ],
         borderWidth: 1
       }]
@@ -233,7 +234,7 @@ function updateCharts(d) {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: { labels: { color: "#8b98b3", font: { size: 10 } } }
+        legend: { labels: { color: "#6b6f7a", font: { size: 10 } } }
       }
     }
   });
