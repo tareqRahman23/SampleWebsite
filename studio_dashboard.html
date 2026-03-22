@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Studio Finance Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #10141a;
+    --panel: #171d26;
+    --border: #252f3c;
+    --accent: #ff4b4b;
+    --accent-soft: #ff9a76;
+    --text: #e5ecf4;
+    --text-dim: #8b98b3;
+    --safe: #3dd68c;
+    --warn: #ffb020;
+    --danger: #ff4b4b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+
+  header {
+    padding: 10px 0 18px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .title {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .subtitle {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: rgba(255,75,75,0.08);
+    color: var(--accent-soft);
+    border: 1px solid rgba(255,75,75,0.4);
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 14px 14px 16px;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+
+  .control-group {
+    background: #1b222e;
+    border-radius: 6px;
+    padding: 8px 10px 10px;
+  }
+
+  .control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+  }
+
+  .control-label {
+    color: var(--text);
+  }
+
+  .control-value {
+    font-size: 0.78rem;
+    color: var(--accent-soft);
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 780px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .kpi-card {
+    background: #151b24;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    padding: 10px 10px 12px;
+    font-size: 0.75rem;
+  }
+  .kpi-label {
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    margin-top: 4px;
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+  .status-safe {
+    background: rgba(61,214,140,0.15);
+    color: var(--safe);
+    border: 1px solid rgba(61,214,140,0.6);
+  }
+  .status-warn {
+    background: rgba(255,176,32,0.15);
+    color: var(--warn);
+    border: 1px solid rgba(255,176,32,0.6);
+  }
+  .status-danger {
+    background: rgba(255,75,75,0.15);
+    color: var(--danger);
+    border: 1px solid rgba(255,75,75,0.6);
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 780px) {
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  .chart-box {
+    background: #151b24;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    padding: 10px;
+  }
+  .chart-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  canvas {
+    max-height: 180px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+  thead th {
+    text-align: right;
+    padding: 6px 6px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  thead th:first-child {
+    text-align: left;
+  }
+  tbody td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #1f2631;
+    text-align: right;
+  }
+  tbody td:first-child {
+    text-align: left;
+  }
+  .td-pos { color: var(--safe); }
+  .td-neg { color: var(--danger); }
+  .td-warn { color: var(--warn); }
+
+  footer {
+    margin-top: 18px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <div class="title">Studio Finance Dashboard</div>
+      <div class="subtitle">12-month cashflow simulator · Dhaka</div>
+    </div>
+    <div class="badge">Interactive · Local only</div>
+  </header>
+
+  <div class="layout">
+    <!-- Controls -->
+    <div class="panel">
+      <div class="panel-title">Inputs</div>
+      <div class="controls">
+
+        <div class="section-label">Revenue</div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Fiverr gross (USD / month)</span>
+            <span class="control-value" id="val_fiverr">$2,000</span>
+          </div>
+          <input type="range" id="fiverr_gross" min="500" max="8000" step="100" value="2000" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Direct client start (BDT / month)</span>
+            <span class="control-value" id="val_direct">৳0</span>
+          </div>
+          <input type="range" id="direct_aug" min="0" max="500000" step="10000" value="0" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Direct revenue growth (BDT / month)</span>
+            <span class="control-value" id="val_direct_growth">৳50,000</span>
+          </div>
+          <input type="range" id="direct_growth" min="0" max="200000" step="5000" value="50000" oninput="updateDashboard()">
+        </div>
+
+        <div class="section-label">Team</div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Dev salary (BDT / month)</span>
+            <span class="control-value" id="val_dev_salary">৳50,000</span>
+          </div>
+          <input type="range" id="dev_salary" min="20000" max="150000" step="5000" value="50000" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">New devs in August</span>
+            <span class="control-value" id="val_aug_devs">2</span>
+          </div>
+          <input type="range" id="aug_devs" min="0" max="7" step="1" value="2" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Hire every X months</span>
+            <span class="control-value" id="val_hire_cadence">2</span>
+          </div>
+          <input type="range" id="hire_cadence" min="1" max="6" step="1" value="2" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Founder draw (total BDT / month)</span>
+            <span class="control-value" id="val_founder_sal">৳0</span>
+          </div>
+          <input type="range" id="founder_sal" min="0" max="300000" step="10000" value="0" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Founder draw starts (month 1–12)</span>
+            <span class="control-value" id="val_founder_start">5</span>
+          </div>
+          <input type="range" id="founder_start" min="1" max="12" step="1" value="5" oninput="updateDashboard()">
+        </div>
+
+        <div class="section-label">Costs & FX</div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Office + utilities (BDT / month)</span>
+            <span class="control-value" id="val_office">৳0</span>
+          </div>
+          <input type="range" id="office_cost" min="0" max="80000" step="2000" value="0" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Software & tools (BDT / month)</span>
+            <span class="control-value" id="val_software">৳15,000</span>
+          </div>
+          <input type="range" id="software_cost" min="0" max="60000" step="1000" value="15000" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Prototype / marketing (BDT / month)</span>
+            <span class="control-value" id="val_proto">৳10,000</span>
+          </div>
+          <input type="range" id="proto_cost" min="0" max="150000" step="5000" value="10000" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">Starting fund (USD)</span>
+            <span class="control-value" id="val_fund">$15,000</span>
+          </div>
+          <input type="range" id="start_fund" min="5000" max="50000" step="1000" value="15000" oninput="updateDashboard()">
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <span class="control-label">FX rate (1 USD = BDT)</span>
+            <span class="control-value" id="val_fx">122.25</span>
+          </div>
+          <input type="range" id="fx_rate" min="100" max="145" step="0.25" value="122.25" oninput="updateDashboard()">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="right-col">
+
+      <div class="panel">
+        <div class="panel-title">Summary</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Ending cash (12 months)</div>
+            <div class="kpi-value" id="kpi_end_cash">৳0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Minimum cash level</div>
+            <div class="kpi-value" id="kpi_min_cash">৳0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Break-even month</div>
+            <div class="kpi-value" id="kpi_breakeven">–</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Status</div>
+            <div id="status_badge" class="status-badge status-safe">
+              <span class="status-dot" style="background: var(--safe);"></span>
+              <span id="status_text">Stable</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-label">Cash balance over time</div>
+          <canvas id="cashChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Monthly net income</div>
+          <canvas id="netChart"></canvas>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-label">Inflow vs outflow</div>
+          <canvas id="inoutChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Cost breakdown (total)</div>
+          <canvas id="costPieChart"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Month-by-month cashflow</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Devs</th>
+                <th>Inflow (৳)</th>
+                <th>Outflow (৳)</th>
+                <th>Net (৳)</th>
+                <th>Cash (৳)</th>
+              </tr>
+            </thead>
+            <tbody id="cashflow_table"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Adjust sliders to test hiring, revenue, and cost scenarios. Nothing is saved or sent anywhere.
+  </footer>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+</html>
